@@ -52,7 +52,20 @@ jobs:
         run: npm run lint
       - name: Static Application Security Testing
         run: npm run sast
+      - name: Run unit tests
+        run: npm run test
       - name: Run tests with coverage
         run: npm run coverage
       - name: Build
         run: npm run build
+
+  supabase:
+    name: Supabase schema lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Lint database migrations
+        run: supabase db lint
