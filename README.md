@@ -9,6 +9,10 @@ A full-stack starter kit prepared for continuous integration, observability, and
 
 ## Contents
 
+- [Scope](#scope)
+- [Roadmap](#roadmap)
+- [User stories](#user-stories)
+- [Supabase considerations](#supabase-considerations)
 - [Backend](#backend)
 - [Frontend](#frontend)
 - [Quality gates](#quality-gates)
@@ -16,6 +20,56 @@ A full-stack starter kit prepared for continuous integration, observability, and
 - [Deployment](#deployment)
 - [Environment variables](#environment-variables)
 - [Monitoring and observability](#monitoring-and-observability)
+
+## Scope
+
+MyclosetB pairs a Vite-powered React frontend with Supabase-managed services to deliver a cohesive wardrobe management experienc
+e.
+
+- **Presentation layer:** React (TypeScript) is responsible for all web-facing experiences, including wardrobe dashboards, item 
+creation forms, and media galleries.
+- **Backend services:** Supabase provides Postgres for persistent storage, Row Level Security-backed Auth for sign-in/sign-up f
+lows, and Storage buckets for handling garment imagery and other assets.
+- **API integration:** The existing FastAPI service focuses on orchestration, domain-specific logic, and any integrations requi
+ring custom server-side functionality that sits alongside Supabase-managed capabilities.
+
+## Roadmap
+
+1. Model wardrobe entities (users, items, outfits, media assets) in Supabase Postgres and expose typed client hooks in the Reac
+   t app.
+2. Implement Supabase Auth flows (email/password and OAuth providers) with React context handling session refresh and protected 
+   routes.
+3. Deliver CRUD operations for wardrobe items, leveraging Supabase Row Level Security policies for tenant isolation.
+4. Integrate Supabase Storage for image uploads from the React UI, including responsive rendering and cache-friendly URLs.
+5. Validate this document and the proposed Supabase-centric stack with the broader product, design, and engineering stakeholders
+   to confirm consensus before advancing to execution.
+
+## User stories
+
+- **Authentication:** As a registered user, I want to log in with Supabase Auth so that my wardrobe data stays private and my se
+  ssion can persist securely across devices.
+- **Wardrobe management:** As a stylist, I want to create, update, and delete clothing items stored in Supabase Postgres so that
+  my inventory always reflects the latest catalog.
+- **Media handling:** As a user, I want to upload outfit photos to Supabase Storage from the React interface so that each wardro
+  be item has rich visual context.
+
+## Supabase considerations
+
+**Advantages**
+
+- Unified platform covering Postgres, Auth, and Storage reduces operational overhead and accelerates initial delivery.
+- Native JavaScript client SDK integrates smoothly with React, enabling real-time updates and simplified session management.
+- Built-in security primitives (Row Level Security, policies, Auth hooks) provide granular access control without bespoke infrast
+  ructure.
+
+**Potential limitations**
+
+- Multi-region availability and custom networking options may lag behind bespoke cloud deployments, impacting organizations with
+  strict residency requirements.
+- Storage egress and invocation costs can rise with high-volume media usage, necessitating monitoring and potential CDN strategi
+  es.
+- Some advanced database extensions or complex migration workflows might require workarounds compared to managing Postgres dire
+  ctly.
 
 ## Backend
 
