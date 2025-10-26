@@ -15,3 +15,7 @@ coverage.xml
 backend/build/
 backend/dist/
 frontend/.vite/
+node_modules/
+.DS_Store
+frontend/dist/
+frontend/.env
