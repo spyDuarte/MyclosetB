@@ -160,6 +160,21 @@ cd deploy
 
 Once running, the backend is available on <http://localhost:8000> and the frontend on <http://localhost:3000>. Adapt these Dockerfiles for your chosen cloud platform (e.g., GitHub Container Registry + AWS ECS, Fly.io, or Azure Container Apps).
 
+## Supabase database & auth
+
+Database migrations, row level security (RLS) policies, and RPC helpers live under [`supabase/migrations/`](supabase/migrations/).
+Run them locally with the Supabase CLI:
+
+```bash
+supabase start
+supabase db reset
+supabase db execute --file supabase/tests/schema_validation.sql
+```
+
+Authentication is handled via Supabase Auth (email login plus optional social providers). Role claims in the JWT govern privileged
+operations (for example, managing global categories). Refer to [`docs/backend/supabase-auth.md`](docs/backend/supabase-auth.md) for
+expected claims, default roles, and manual test procedures.
+
 ## Environment variables
 
 All configurable values are versioned in [`.env.example`](.env.example). Copy this file to `.env` and adjust per environment. Key variables include Sentry DSNs, log levels, and optional metric ingestion endpoints for the frontend.
