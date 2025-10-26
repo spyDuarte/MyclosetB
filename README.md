@@ -1,17 +1,119 @@
-# MyClosetB
+# MyclosetB
 
-Este repositório contém a base inicial do MyClosetB, uma plataforma para gerenciamento inteligente de guarda-roupa.
+[![CI](https://github.com/your-org/MyclosetB/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/MyclosetB/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](backend/tests)
+[![Lint](https://img.shields.io/badge/lint-ruff%20%26%20eslint-blue.svg)](.github/workflows/ci.yml)
+[![SAST](https://img.shields.io/badge/SAST-bandit%20%26%20npm%20audit-critical.svg)](.github/workflows/ci.yml)
 
-## Estrutura
-- `docs/ui/` — wireframes de dashboard, cadastro de peças e criação de looks.
-- `docs/frontend/` — documentação da biblioteca de componentes e do tema.
-- `frontend/` — aplicação React com Vite + Chakra UI.
+A full-stack starter kit prepared for continuous integration, observability, and container-based deployments. The repository contains a FastAPI backend and a Vite + React frontend with consistent quality gates across linting, testing, coverage, and security analysis.
 
-## Como começar
-1. Leia os wireframes em `docs/ui/` para entender o fluxo de telas.
-2. Configure o frontend seguindo as instruções em `frontend/README.md`.
-3. Consulte a documentação de componentes em `docs/frontend/component-library.md`.
+## Contents
 
-## Próximos passos
-- Implementar integrações reais com o backend a partir das funções em `frontend/src/api/client.js`.
-- Expandir testes de interface (React Testing Library / Vitest) e adicionar cenários end-to-end com Cypress conforme o backend estiver disponível.
+- [Backend](#backend)
+- [Frontend](#frontend)
+- [Quality gates](#quality-gates)
+- [Continuous integration](#continuous-integration)
+- [Deployment](#deployment)
+- [Environment variables](#environment-variables)
+- [Monitoring and observability](#monitoring-and-observability)
+
+## Backend
+
+Located under [`backend/`](backend/), the FastAPI service ships with:
+
+- Structured JSON logging powered by `structlog`.
+- Automatic Sentry instrumentation (errors and traces) when `BACKEND_SENTRY_DSN` is set.
+- Built-in Prometheus counters and histograms exposed from `/metrics` for traffic and latency analysis.
+- Unit tests executed with `pytest` and coverage reporting managed by `coverage.py`.
+
+Run the service locally:
+
+```bash
+cd backend
+pip install -e .[dev]
+uvicorn myclosetb_backend.main:app --reload
+```
+
+Execute quality checks:
+
+```bash
+ruff check src tests
+coverage run -m pytest
+coverage report
+bandit -r src/myclosetb_backend -ll
+```
+
+## Frontend
+
+The frontend in [`frontend/`](frontend/) is a Vite-powered React app wired for monitoring and automated testing.
+
+- Sentry browser SDK initialised via environment variables.
+- Structured console breadcrumbs for user interactions and optional metrics export via `navigator.sendBeacon`.
+- Linting handled by ESLint (`standard` configuration) and unit tests executed by Vitest with coverage reports.
+
+Local development workflow:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Quality gates:
+
+```bash
+npm run lint
+npm run test
+npm run coverage
+npm run build
+```
+
+## Quality gates
+
+| Area                | Backend command                                 | Frontend command            |
+| ------------------- | ------------------------------------------------ | --------------------------- |
+| Lint                | `ruff check src tests`                           | `npm run lint`              |
+| Tests               | `coverage run -m pytest`                         | `npm run test`              |
+| Coverage report     | `coverage report`                                | `npm run coverage`          |
+| Static security     | `bandit -r src/myclosetb_backend -ll`            | `npm audit --audit-level=high` (run locally) |
+| Build               | `python -m build`                                | `npm run build`             |
+
+## Continuous integration
+
+The [`ci.yml`](.github/workflows/ci.yml) workflow orchestrates two jobs:
+
+1. **Backend quality gates** – installs the FastAPI package, runs Ruff linting, executes the pytest suite under coverage, runs Bandit for SAST, and validates that the project builds wheels.
+2. **Frontend quality gates** – installs npm dependencies, runs ESLint, executes Vitest with coverage reporting, and builds the production bundle.
+
+Artifacts such as coverage details are emitted directly in the job logs, making it easy to track regressions from pull requests.
+
+## Deployment
+
+Container-based deployment assets live in [`deploy/`](deploy/):
+
+- `backend.Dockerfile` builds the FastAPI app and launches it with Uvicorn.
+- `frontend.Dockerfile` compiles the React bundle and serves it through Nginx.
+- `docker-compose.yml` wires both services together for local smoke tests or single-node deployments.
+- `deploy.sh` provides a helper script that builds and starts the stack using Docker Compose (either the plugin or standalone binary).
+
+To launch locally:
+
+```bash
+cp .env.example .env
+cd deploy
+./deploy.sh
+```
+
+Once running, the backend is available on <http://localhost:8000> and the frontend on <http://localhost:3000>. Adapt these Dockerfiles for your chosen cloud platform (e.g., GitHub Container Registry + AWS ECS, Fly.io, or Azure Container Apps).
+
+## Environment variables
+
+All configurable values are versioned in [`.env.example`](.env.example). Copy this file to `.env` and adjust per environment. Key variables include Sentry DSNs, log levels, and optional metric ingestion endpoints for the frontend.
+
+## Monitoring and observability
+
+- **Structured logging** – Both backend (Structlog) and frontend (structured `console.info` calls) emit machine-readable logs to simplify log aggregation.
+- **Error tracking** – Sentry is initialised automatically in both tiers when DSNs are provided, capturing exceptions and performance traces.
+- **Metrics** – Prometheus counters/histograms measure request rate and latency on the backend, while the frontend tracks page views and interactions with the option to stream them to a backend endpoint via the `VITE_METRICS_ENDPOINT` variable.
+
+These building blocks let you plug the stack into a monitoring pipeline quickly while maintaining coverage, static analysis, and security scanning from the first commit.

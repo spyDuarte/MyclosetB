@@ -1,23 +1,22 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box } from '@chakra-ui/react';
-import AppLayout from './components/layout/AppLayout.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import WardrobeForm from './pages/WardrobeForm.jsx';
-import LookBuilder from './pages/LookBuilder.jsx';
+import { useCallback, useState } from 'react'
+import { recordInteraction } from './monitoring.js'
 
-function App() {
+export default function App () {
+  const [count, setCount] = useState(0)
+
+  const handleClick = useCallback(() => {
+    const next = count + 1
+    setCount(next)
+    recordInteraction('counter.increment', { value: next })
+  }, [count])
+
   return (
-    <AppLayout>
-      <Box as="main" role="main" flex="1" px={{ base: 4, md: 8 }} py={{ base: 4, md: 6 }}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/wardrobe/new" element={<WardrobeForm />} />
-          <Route path="/looks/new" element={<LookBuilder />} />
-        </Routes>
-      </Box>
-    </AppLayout>
-  );
+    <main style={{ fontFamily: 'system-ui', padding: '2rem' }}>
+      <h1>MyclosetB</h1>
+      <p>Observability ready starter frontend.</p>
+      <button type="button" onClick={handleClick}>
+        Clicked {count} times
+      </button>
+    </main>
+  )
 }
-
-export default App;
