@@ -28,8 +28,19 @@ export const useImageUpload = () => {
     if (!validateFile(file)) return null;
     setUploading(true);
 
-    const ext = file.name.split('.').pop();
-    const filePath = `${userId}/${Date.now()}.${ext}`;
+    // Extrai extensão de forma mais robusta baseada no tipo MIME
+    const mimeToExt = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp'
+    };
+    const ext = mimeToExt[file.type] || 'jpg';
+
+    // Gera nome único e seguro para o arquivo
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const filePath = `${userId}/${timestamp}_${randomStr}.${ext}`;
 
     try {
       const { error } = await supabase.storage.from('wardrobe-images').upload(filePath, file, {
@@ -55,10 +66,22 @@ export const useImageUpload = () => {
     if (!publicUrl) return;
     try {
       const url = new URL(publicUrl);
-      const path = decodeURIComponent(url.pathname.split('/storage/v1/object/public/')[1]);
-      await supabase.storage.from('wardrobe-images').remove([path]);
+      const pathParts = url.pathname.split('/storage/v1/object/public/');
+
+      // Valida se o path foi extraído corretamente
+      if (pathParts.length < 2 || !pathParts[1]) {
+        console.error('Formato de URL inválido:', publicUrl);
+        return;
+      }
+
+      const path = decodeURIComponent(pathParts[1]);
+      const { error } = await supabase.storage.from('wardrobe-images').remove([path]);
+
+      if (error) {
+        console.error('Erro ao remover imagem do storage:', error);
+      }
     } catch (err) {
-      console.error('Erro ao remover imagem', err);
+      console.error('Erro ao remover imagem:', err);
     }
   };
 
